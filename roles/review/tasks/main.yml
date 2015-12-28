@@ -1,0 +1,54 @@
+---
+- name: sudo tlmgr update.
+  shell: tlmgr update --self --all
+  sudo: yes
+
+- name: sudo tlmgr install1 for Re:VIEW.
+  shell: tlmgr install ptex ptex2pdf jfontmaps jsclasses japanese-otf
+  sudo: yes
+
+- name: sudo tlmgr install2 for Re:VIEW.
+  shell: tlmgr install framed wrapfig upquote collection-fontsrecommended
+  sudo: yes
+
+- name: create font directory
+  file: path=/usr/local/texlive/2015basic/texmf-local/fonts/opentype/local/hiragino state=directory
+  sudo: yes
+
+- name: create symbolic link hiragino font 
+# # file: src="/Library/Fonts/ヒラギノ角ゴ Pro W3.otf"  dest=/usr/local/texlive/2015basic/texmf-local/fonts/opentype/local/hiragino/HiraKakuPro-W3.otf state=link
+  file: >
+    src="/Library/Fonts/{{ item.path }}" 
+    dest=/usr/local/texlive/2015basic/texmf-local/fonts/opentype/local/hiragino/{{ item.dest }} 
+    state=link
+  with_items:
+    - { path: 'ヒラギノ角ゴ Pro W3.otf', dest: 'HiraKakuPro-W3.otf' }
+    - { path: 'ヒラギノ角ゴ Pro W6.otf', dest: 'HiraKakuPro-W6.otf' }
+    - { path: 'ヒラギノ角ゴ Std W8.otf', dest: 'HiraKakuStd-W8.otf' }
+    - { path: 'ヒラギノ丸ゴ Pro W4.otf', dest: 'HiraMaruPro-W4.otf' }
+    - { path: 'ヒラギノ明朝 Pro W3.otf', dest: 'HiraMinPro-W3.otf' }
+    - { path: 'ヒラギノ明朝 Pro W6.otf', dest: 'HiraMinPro-W6.otf' }
+  sudo: yes
+
+- name: japanese fonts configretion.
+  shell: updmap-sys --setoption kanjiEmbed hiragino
+  sudo: yes
+
+- name: download otfbeta.tar.xz tarball
+  get_url: >
+    url=http://ftp.kddilabs.jp/TeX/ptex-win32/current/otfbeta.tar.xz 
+    dest=~/Downloads/otfbeta.tar.xz
+
+- name: untar the tarball
+  command: >
+    tar -xzf ~/Downloads/otfbeta.tar.xz -C ~/Downloads/.
+
+- name: copy directory
+  copy: src={{ item.src_dir }} dest={{ item.dest_dir }}
+  with_items:
+    - { src_dir: '~/Downloads/share/texmf-dist/', dest_dir: '/usr/local/texlive/2015basic/texmf-local/' }
+  sudo: yes
+
+- name: create ls -R files.
+  shell: mktexlsr
+  sudo: yes
