@@ -52,3 +52,14 @@
 - name: create ls -R files.
   shell: mktexlsr
   sudo: yes
+
+- name: gem install review
+  gem: name=review state=latest
+
+- name: download test files.
+#  command: git clone https://github.com/takahashim/review-sample-book.git ~/review/test
+  git: repo=https://github.com/takahashim/review-sample-book.git
+       dest=~/review/test
+
+- name: review-pdfmaker.
+  command: chdir=~/review/test/src/ review-pdfmaker config.yml
